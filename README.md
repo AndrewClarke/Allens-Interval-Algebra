@@ -122,6 +122,8 @@ If you're lucky, this package may end up augmented by suggestions, or even actua
 
 ## Installation
 
+TODO: FIX THE FOLLOWING TO SUIT THE NEW NAME!!!
+
 Add this line to your application's Gemfile:
 
     gem 'allens_interval_algebra'
