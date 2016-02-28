@@ -1,13 +1,36 @@
 Allens-Interval-Algebra
 =======================
 
-Implement the essential operators from Allens Interval Algebra,
-and also some metaprogramming for combinatoral operators
+Implement the essential operators from Allens Interval Algebra, and also some
+metaprogramming for combinatoral operators.
 
-Defines a type representing a [closed, open) range from [starts, ends) where ends
+If you are interested in temporal databases, A very useful book to read is
+
+  Managing Time in Relational Databases
+  Tom Johnson, Randall Weis
+  19-AUG-2010 Morgan-Kaufmann Publishing
+  ISBN 978-0-12-375041-9
+
+Throughout the code and documentation, "the book" refers to this book.
+
+Defines a type representing a closed-open range from [starts, ends), where ends
 represents the first value NOT part of the range. The methods define the strict
 definitions of the operators from Allens Interval Algebra, where a pair of intervals
 can only satisfy exactly one operator.
+
+The class must be sub-classed because you are required to define a 'forever' value
+for your class, along with the size of the 'atomic clock' (chronon) and clock ticks.
+Note that the clock ticks are not used (yet) but the 'forever' value definitely is.
+
+An early version of this code allowed nil to represent 'forever' BUT it has weaknesses
+when inlining combinations of operators - many tests for nil were required to guard
+the comparison operators within the methods. Using a genuine value from the ordinal
+scale allows much simpler optimised expressions when inlined, not to mention simpler
+expressions in the fundamental operators themselves.
+
+You can base your end-points on any ordinal scalar: fixnum, floats, timestamps, etc.
+
+## Overview of Allens Interval Algebra
 
 To understand AIA, consider the comparison relations of ordinary numbers for a moment.
 Just as, for any specific values in x and y, only one of the following relations
@@ -36,6 +59,13 @@ of the equals? operator.
     x.after?(y)             [4,10)  [1,3)       Bi  >   A
 
 (ignore the last columns of letters and symbols, they will be referred to later)
+
+NOTE: A number of higher-level operators exist, offering useful combinations:
+    aligns?     = starts?   | finishes?     | finishedBy? | startedBy?
+    occupies?   = during?   | includes?     | aligns?
+    fills?      = equals?   | occupies?
+    intersects? = overlaps? | overlappedBy? | fills?
+    excludes?   = before?   | meets?        | metBy?      | after?
 
 With ordinary numbers, the operators <=, >= and != exist; you might be wondering
 why they were not considered. These extra operators are derived from the core operators:
@@ -113,12 +143,16 @@ For a hypothetical Ruby-esque approach, I'll be aiming for something like:
 Read up on the algebra to understand how sets of operators can be used in expressions.
 Further work will be required to implement that algebra.
 
-From a programming perspective (eg aimed at Temporal Databases), higher level operators
-could usefully be defined, similar to the way (<=) is defined as (< or =) Once again,
-that's better performed in a separate package which uses this one for it's raw materials.
-This package should always remain clean and true to the Algebra.
+## Still to do
 
-If you're lucky, this package may end up augmented by suggestions, or even actual packages.
+* Account for clock-ticks and chronons.
+* Given the existence of clock ticks, temporal database theory considers [x, x + ct)
+to be a 'point'. There are clearly defined rules for how they compare with periods
+and other points, as mentioned in chapter 3 of the book.
+* If [x, x + ct) is a point, what does temporal database theory consider [x, x)
+I have been calling it a 'singularity', but it may be useless or outright illegal...
+I haven't finished the book yet!
+
 
 ## Installation
 
@@ -147,3 +181,4 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+

@@ -3,7 +3,7 @@ require 'allens'
 
 module Allens
   class Interval
-    def self.maker(str)
+    def self.maker(str, offset = 0)
       # Construct from a string like   /^\.*x+\.*$/ or /^\.*X+$/
       # If X is used, it implies the Interval ranges to infinity, therefore it must not be followed by dots.
       # Also, x and X cannot (should not) be mingled.
@@ -15,6 +15,8 @@ module Allens
       # represent infinity, in practice the string diagrams can look more obvious when all the strings
       # are the same length; thus "..XXX" is recommended when comparing with "..xx."
       #
+      # offset allows adjusting the numbers yielded eg to cope with bizarre forever values
+
       starts = str.index(/[xX]/) + 1
       ends = str.index(?., starts - 1)
       if ends.nil?
@@ -23,10 +25,18 @@ module Allens
         ends += 1
       end
 
-      return str[-1] == ?X ? self.new(starts) : self.new(starts, ends)
+      return str[-1] == ?X ? self.new(starts + offset) : self.new(starts + offset, ends + offset)
     end
   end
 end
+
+
+class TestInterval < Allens::Interval
+  def self.forever
+    return 1000
+  end
+end
+
 
 class AltInterval < Allens::Interval
   def self.forever

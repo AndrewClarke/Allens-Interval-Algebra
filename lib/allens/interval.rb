@@ -1,21 +1,32 @@
 
 module Allens
   class Interval
-    def self.forever       # sub-classes can nominate their own "forever" value
-      return nil
-    end
+    # Regarding the clock ticks mentioned below, e.g. timestamps could profitably use:
+    #   chronon   = 0.000001 (find out what Ruby's granularity is for timestamp)
+    #   clocktick = 0.000001 (choose your preference, multiple of chronon)
+    #   forever   = "999/12/31 23:59:59.999999"
+    # BEWARE: that .999999 stuff should be exactly the last possible clock-tick at the
+    # granularity you are choosing to use. (and to understand this, you need to know
+    # about the concepts of 'atomic clock tick' ('chronon'), 'clock tick' and the finer
+    # points about their interection).
+
+    Whinge = "Do not use Allens::Interval directly. Subclass it, and define class methods 'chronon', 'clocktick' and 'forever' returning non-nil values"
+
+    def self.chronon;   raise Allens::Interval::Whinge; end
+    def self.clocktick; raise Allens::Interval::Whinge; end
+    def self.forever;   raise Allens::Interval::Whinge; end
 
 
     def initialize(starts, ends = nil)
       # Passing in a nil 'ends' (ie not passing) manufactures a forever Interval.
       # Programmers may pass the forever value of their particular subclass; cope with that too
       #
-      if ! ends.nil? && ends != self.class.forever && starts > ends
-        raise ArgumentError, "Expected starts <= ends. Got starts=#{starts}, ends=#{ends}"
-      end
+      ends ||= self.class.forever
+      ends.nil?                 and raise Allens::Inteval::Winge
+      starts > ends             and raise ArgumentError, "Expected starts <= ends. Got starts=#{starts}, ends=#{ends}"
+      ends > self.class.forever and raise ArgumentError, "Expected ends <= 'FOREVER' (#{self.class.forever}). Got starts=#{starts}, ends=#{ends}"
 
-      @starts = starts
-      @ends = ends.nil? ? self.class.forever : ends
+      @starts, @ends = starts, ends
     end
 
 
@@ -25,13 +36,12 @@ module Allens
 
 
     def eql?(other)
-      return false if starts != other.starts
-      return false if forever? != other.forever?
-      return forever? && other.forever? || ends == other.ends
+      return starts == other.starts && ends == other.ends
     end
 
 
     ##################################################################
+    # Utility functions
     def to_s(*args)
       return "[" + starts.to_s(*args) + "," + (forever? ? "-" : ends.to_s(*args)) + ")"
     end
@@ -61,77 +71,39 @@ module Allens
 
 
     ##################################################################
-    def before?(y)
-      if y.is_a?(Interval)
-        return limited? && ends < y.starts
-      end
+    # TODO: temporal use has strong opinions about how points relate to
+    # periods. Check chapter 3, build some tests and go for gold (or green...)
+    # hint: see how metBy? has a theoretically useless "starts > y.starts"
+    # clause? That may be what's needed to fix things; or it might need to be removed!
+    # Consider the granularity effect of the clocktick, and hope that it won't
+    # need subtracting from one of the values with changes from (eg) < to <= or whatever...
 
-      return limited? && (y == self.class.forever || ends <= y)
-    end
+    def before?(y);       return ends   <  y.starts;                                      end
+    def meets?(y);        return ends   == y.starts;                                      end
+    def overlaps?(y);     return starts <  y.starts && ends >  y.starts && ends < y.ends; end
+    def starts?(y);       return starts == y.starts && ends <  y.ends;                    end
+    def during?(y);       return starts >  y.starts && ends <  y.ends;                    end
+    def finishes?(y);     return starts >  y.starts && ends == y.ends;                    end
+    def equals?(y);       return starts == y.starts && ends == y.ends;                    end
+    def finishedBy?(y);   return starts <  y.starts && ends == y.ends;                    end
+    def includes?(y);     return starts <  y.starts && ends >  y.ends;                    end
+    def startedBy?(y);    return starts == y.starts && ends >  y.ends;                    end
+    def overlappedBy?(y); return starts >  y.starts && starts < y.ends && ends > y.ends;  end
+    def metBy?(y);        return starts == y.ends;                                        end
+    def after?(y);        return starts >  y.ends;                                        end
 
-    def meets?(y)
-      return starts < y.starts && limited? && ends == y.starts
-    end
 
-    def overlaps?(y)
-      return starts < y.starts && limited? && ends > y.starts && (y.forever? || ends < y.ends)
-    end
-
-    def starts?(y)
-      return starts == y.starts && limited? && (y.forever? || ends < y.ends)
-    end
-
-    def during?(y)
-      return starts > y.starts && limited? && (y.forever? || ends < y.ends)
-    end
-
-    def finishes?(y)
-      return starts > y.starts && ((forever? && y.forever?) || (limited? && y.limited? && ends == y.ends))
-    end
-
-    def equals?(y)
-      return starts == y.starts && ((forever? && y.forever?) || (limited? && y.limited? && ends == y.ends))
-    end
-
-    def finishedBy?(y)
-      if y.is_a?(Interval)
-        return starts < y.starts && ((forever? && y.forever?) || (limited? && y.limited? && ends == y.ends))
-      end
-
-      return forever? ? y == self.class.forever : y != self.class.forever && ends == y
-    end
-
-    def includes?(y)
-      if y.is_a?(Interval)
-        return starts < y.starts && y.limited? && (forever? || ends > y.ends)
-      end
-
-      return y != self.class.forever && starts < y && (forever? || y < ends)
-    end
-
-    def startedBy?(y)
-      if y.is_a?(Interval)
-        return starts == y.starts && y.limited? && (forever? || ends > y.ends)
-      end
-
-      return y != self.class.forever && starts == y
-    end
-
-    def overlappedBy?(y)
-      return starts > y.starts && y.limited? && starts < y.ends && (forever? || ends > y.ends)
-    end
-
-    def metBy?(y)
-      return starts > y.starts && y.limited? && starts == y.ends
-    end
-
-    def after?(y)
-      if y.is_a?(Interval)
-        return y.limited? && starts > y.ends
-      end
-
-      return y != self.class.forever && starts > y
-    end
+    ##################################################################
+    # Combinatoral operators - See chapter 3's taxonomy.
+    # TODO: Unit tests!
+    # TODO: expand the nested calls, and simplify the expressions,
+    # but ONLY after the unit tests are solid!!!
+    #
+    def aligns?(y);     return starts?(y) || finishes?(y) || finishedBy?(y) || startedBy?(y); end
+    def occupies?(y);   return during?(y) || includes?(y) || aligns?(y);                      end
+    def fills?(y);      return equals?(y) || occupies?(y);                                    end
+    def intersects?(y); return overlaps?(y) || overlappedBy?(y) || fills?(y);                 end
+    def excludes?(y);   return before?(y) || meets?(y) || metBy?(y) || after?(y);             end
 
 
     ##################################################################
