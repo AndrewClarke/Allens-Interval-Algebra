@@ -6,14 +6,14 @@ metaprogramming for combinatoral operators.
 
 If you are interested in temporal databases, A very useful book to read is
 
-  Managing Time in Relational Databases
-  Tom Johnson, Randall Weis
-  19-AUG-2010 Morgan-Kaufmann Publishing
-  ISBN 978-0-12-375041-9
+    Managing Time in Relational Databases
+    Tom Johnson, Randall Weis
+    19-AUG-2010 Morgan-Kaufmann Publishing
+    ISBN 978-0-12-375041-9
 
 Throughout the code and documentation, "the book" refers to this book.
 
-Defines a type representing a closed-open range from [starts, ends), where ends
+Defines a type representing a closed-open range from `[starts, ends)`, where ends
 represents the first value NOT part of the range. The methods define the strict
 definitions of the operators from Allens Interval Algebra, where a pair of intervals
 can only satisfy exactly one operator.
@@ -61,6 +61,7 @@ of the equals? operator.
 (ignore the last columns of letters and symbols, they will be referred to later)
 
 NOTE: A number of higher-level operators exist, offering useful combinations:
+
     aligns?     = starts?   | finishes?     | finishedBy? | startedBy?
     occupies?   = during?   | includes?     | aligns?
     fills?      = equals?   | occupies?
@@ -107,7 +108,7 @@ This appears to be the original Allens symbolism or near enough, but is clearly 
 for Ruby meta-programming.
 
 In order to support meta-programming in Ruby, this module will use the notation of the last
-column, which is slighlty more mnemonic while remaining very concise.
+column, which is slightly more mnemonic while remaining very concise.
 
 The algebra goes on to define a notation supporting more than one operator in the expressions.
 The Wikipedia entry provides the following sample, converting a pair of assertions:
@@ -141,15 +142,15 @@ For a hypothetical Ruby-esque approach, I'll be aiming for something like:
     events.select { |ev| ev.BMO?(dinner) }
 
 Read up on the algebra to understand how sets of operators can be used in expressions.
-Further work will be required to implement that algebra.
+
 
 ## Still to do
 
 * Account for clock-ticks and chronons.
-* Given the existence of clock ticks, temporal database theory considers [x, x + ct)
+* Given the existence of clock ticks, temporal database theory considers `[x, x + ct)`
 to be a 'point'. There are clearly defined rules for how they compare with periods
 and other points, as mentioned in chapter 3 of the book.
-* If [x, x + ct) is a point, what does temporal database theory consider [x, x)
+* If `[x, x + ct)` is a point, what does temporal database theory consider `[x, x)`?
 I have been calling it a 'singularity', but it may be useless or outright illegal...
 I haven't finished the book yet!
 
