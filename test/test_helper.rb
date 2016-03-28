@@ -27,10 +27,3 @@ module Allens
   end
 end
 
-
-class TestInterval < Allens::Interval
-  def self.forever
-    return 1000
-  end
-end
-
