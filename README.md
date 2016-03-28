@@ -19,8 +19,13 @@ definitions of the operators from Allens Interval Algebra, where a pair of inter
 can only satisfy exactly one operator.
 
 The class must be sub-classed because you are required to define a 'forever' value
-for your class, along with the size of the 'atomic clock' (chronon) and clock ticks.
-Note that the clock ticks are not used (yet) but the 'forever' value definitely is.
+for your class, along with the size of the atomic clock and clock ticks in your
+chosen resolution.
+NOTE: currently, the two clock ticks are not used, because I'm not sure if the clients
+should be required to round to the tick granularities, or whether this library should
+act like a nanny and perform/check roundings on your behalf. It is important to know,
+however, that the code is always written to trust that the start and end values are
+correctly rounded to appropriate ticks.
 
 An early version of this code allowed nil to represent 'forever' BUT it has weaknesses
 when inlining combinations of operators - many tests for nil were required to guard
@@ -28,7 +33,59 @@ the comparison operators within the methods. Using a genuine value from the ordi
 scale allows much simpler optimised expressions when inlined, not to mention simpler
 expressions in the fundamental operators themselves.
 
+Note that the clock tick must be some multiple of the 'atomic clock' which is the
+smallest resolution possible for your chosen scalars, such as 1 microsecond if using
+a native timestamp in your chosen language. I'm considering using 1 millisecond for
+any work I do in Rails, since it would suit the sort of business applications I'm
+likely to be involved in. Future code might support storing the clock tick value
+in the database, and it would be seriously advanced to allow different columns to
+support different clock ticks. The book says that is possible, albeit complex, but
+I haven't got around to that chapter or section yet...
+
+Pro Tip: choose a 'forever' value that is basically the maximum possible in your
+chosen scalar, for example, timestamp '9999/12/31 23:59:59.999999' (or perhaps relax
+a bit and use '9999/12/31 00:00:00' so you don't have to fuss around finding a value
+that is one clock-tick shy of ultimate hugeness... The book chooses a clock tick of
+1 month (!) simply because it's easier to fit the data when presenting tables in
+printed form.
+
 You can base your end-points on any ordinal scalar: fixnum, floats, timestamps, etc.
+It is important to note that the code is definitely assuming a clock-tick, as opposed
+to pretending to support the real number domain.
+
+What does a clock tick really mean anyway? Glad you asked. It is the smallest distinct
+delta between values that you choose to represent. If we were using the Real number
+scale, for example, then [x, x) would represent a 'point' ie a span that starts at
+x and has no length. When using clock-ticks, [x, x + c) is a 'point' since there is
+no representable value between x and x+c, and the duration of any interval [s, e) is
+defined as
+
+    e - s - c
+
+because, remember, e is not 'in' the span, for example, using c=1,
+
+    [10, 12) encompasses timestamps 10 and 11, with 12 being excluded.
+             length = 12 - 10 - 1 == 1
+
+    [10, 11) encompasses only timestamp 10, which of course must have length 0
+             length = 11 - 10 - 1 == 0
+
+Note also that when using clock ticks, [x, x) is an illegal interval.
+
+Choosing a certain sized clock tick means that you will never try to represent a
+fraction of a clock-tick in your intervals. If you want to measure down to milliseconds,
+choose 0.001 as the clock tick. For microseconds, choose 0.000001 and so on.
+
+The book states:
+    An atomic clock tick is the smallest interval of time recognized by the DBMS that
+    can elapse between any two physical modifications to a database. We note that the
+    standard computer science term for an atomic clock tick is a chronon. A clock tick
+    is an interval of time defined on the basis of atomic clock ticks, and that is used
+    in an Asserted Versioning database to delimit the two time periods of rows in asserted
+    version tables, and also to indicate several important points in time. In asserted
+    version tables, clock ticks are used for effective time begin and end dates and for
+    episode begin dates; and atomic clock ticks are used for assertion time begin and end
+    dates, and for row create dates.
 
 ## Overview of Allens Interval Algebra
 
@@ -146,13 +203,11 @@ Read up on the algebra to understand how sets of operators can be used in expres
 
 ## Still to do
 
-* Account for clock-ticks and chronons.
+* Account for chronons and clock-ticks.
 * Given the existence of clock ticks, temporal database theory considers `[x, x + ct)`
 to be a 'point'. There are clearly defined rules for how they compare with periods
 and other points, as mentioned in chapter 3 of the book.
-* If `[x, x + ct)` is a point, what does temporal database theory consider `[x, x)`?
-I have been calling it a 'singularity', but it may be useless or outright illegal...
-I haven't finished the book yet!
+* Since `[x, x + ct)` is a point, temporal database theory considers `[x, x)` as illegal.
 
 
 ## Installation
