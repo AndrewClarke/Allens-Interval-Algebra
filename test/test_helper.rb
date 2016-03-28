@@ -5,25 +5,24 @@ module Allens
   class Interval
     def self.maker(str)
       # Construct from a string like   /^\.*x+\.*$/ or /^\.*X+$/
-      # If X is used, it implies the Interval ranges to infinity, therefore it must not be followed by dots.
-      # Also, x and X cannot (should not) be mingled.
-      #
       # The pattern returns an Interval starting at 1..n (where the first [Xx] is found) and the end is the
       # position after the last x found.
-      # If X is used, it must run all the way to the end, and it represents infinity as the terminating
-      # date: [n, INF) ie an open-ended interval. Although a single trailing X would be sufficient to
-      # represent infinity, in practice the string diagrams can look more obvious when all the strings
-      # are the same length; thus "..XXX" is recommended when comparing with "..xx."
+      #
+      # If X is used, it implies the Interval ranges to 'forever', therefore it must not be followed by dots -
+      # the string should be filled to the end with big-X if big-X is used. Note that the code here doesn't
+      # check - it trusts you! I mean, come on. Tests inside tests? Get it rite!!!
+      # Another consequence is that x and X cannot (and/or should not) be mingled.
 
       starts = str.index(/[xX]/) + 1
-      ends = str.index(?., starts - 1)
-      if ends.nil?
-        ends = str.length + 1
+
+      if str[-1] == ?X
+        result = self.new(starts)       # ending with big-X implies the interval runs to 'forever'
       else
-        ends += 1
+        ends = (str.index(?., starts - 1) || str.length) + 1
+        result = self.new(starts, ends)
       end
 
-      return str[-1] == ?X ? self.new(starts) : self.new(starts, ends)
+      return result
     end
   end
 end
