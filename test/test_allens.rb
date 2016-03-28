@@ -19,7 +19,7 @@ class AllensTest < Test::Unit::TestCase
   # Each pattern pair will satisfy exactly one operator. The pairs of pairs are
   # designed to test Intervals that are both limited and have a 'forever' ends value.
   # The list of numbers shows which of the higher operators should be true for
-  # this combo; this list is ignored for testing the fundamental operators.
+  # this combo; these extra lists are ignored for testing the fundamental operators.
   #
   VALS = [ [ "x..", "..x", [ 0, 0, 0, 0, 1 ] ], [ "x..", "..X", [ 0, 0, 0, 0, 1 ] ],
            [ "x..", ".xx", [ 0, 0, 0, 0, 1 ] ], [ "x..", ".XX", [ 0, 0, 0, 0, 1 ] ],
@@ -28,7 +28,7 @@ class AllensTest < Test::Unit::TestCase
            [ ".x.", "xxx", [ 0, 1, 1, 1, 0 ] ], [ ".x.", "XXX", [ 0, 1, 1, 1, 0 ] ],
            [ ".xx", "xxx", [ 1, 1, 1, 1, 0 ] ], [ ".XX", "XXX", [ 1, 1, 1, 1, 0 ] ],
            [ "xxx", "xxx", [ 0, 0, 1, 1, 0 ] ], [ "XXX", "XXX", [ 0, 0, 1, 1, 0 ] ],
-           [ "xxx", "..x", [ 1, 1, 1, 1, 0 ] ], [ "XXX", "..X", [ 1, 1, 1, 1, 0 ] ],
+           [ "xxx", ".xx", [ 1, 1, 1, 1, 0 ] ], [ "XXX", ".XX", [ 1, 1, 1, 1, 0 ] ],
            [ "xxx", ".x.", [ 0, 1, 1, 1, 0 ] ], [ "XXX", ".x.", [ 0, 1, 1, 1, 0 ] ],
            [ "xxx", "x..", [ 1, 1, 1, 1, 0 ] ], [ "XXX", "x..", [ 1, 1, 1, 1, 0 ] ],
            [ ".xx", "xx.", [ 0, 0, 0, 1, 0 ] ], [ ".XX", "xx.", [ 0, 0, 0, 1, 0 ] ],
