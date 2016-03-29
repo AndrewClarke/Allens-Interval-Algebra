@@ -3,6 +3,8 @@ Allens-Interval-Algebra
 
 Implement the essential operators from Allens Interval Algebra, and also some
 metaprogramming for combinatoral operators.
+NOTE: I am very tempted to remove the metaprogrammed operators because they
+don't appear to be needed by 'the book' (see below).
 
 If you are interested in temporal databases, A very useful book to read is
 
@@ -21,11 +23,11 @@ can only satisfy exactly one operator.
 The class must be sub-classed because you are required to define a 'forever' value
 for your class, along with the size of the atomic clock and clock ticks in your
 chosen resolution.
-NOTE: currently, the two clock ticks are not used, because I'm not sure if the clients
+NOTE: currently, the two clock ticks are not used because I'm not sure if the clients
 should be required to round to the tick granularities, or whether this library should
 act like a nanny and perform/check roundings on your behalf. It is important to know,
 however, that the code is always written to trust that the start and end values are
-correctly rounded to appropriate ticks.
+correctly rounded to appropriate granular ticks - ie no 'real' scale mentality allowed.
 
 An early version of this code allowed nil to represent 'forever' BUT it has weaknesses
 when inlining combinations of operators - many tests for nil were required to guard
@@ -119,11 +121,28 @@ of the equals? operator.
 
 NOTE: A number of higher-level operators exist, offering useful combinations:
 
-    aligns?     = starts?   | finishes?     | finishedBy? | startedBy?
-    occupies?   = during?   | includes?     | aligns?
-    fills?      = equals?   | occupies?
-    intersects? = overlaps? | overlappedBy? | fills?
-    excludes?   = before?   | meets?        | metBy?      | after?
+    before!     = before?   | after?
+    meets!      = meets?    | metBy?
+    overlaps!   = overlaps? | overlappedBy?
+    starts!     = starts?   | startedBy?
+    during!     = during?   | includes?
+    finishes!   = finishes? | finishedBy?
+    equals!     = equals?                       N.B. defined for consistency
+
+    aligns!     = starts!   | finishes!
+    occupies!   = aligns!   | during!
+    fills!      = occupies! | equals!
+    intersects! = fills!    | overlaps!
+    excludes!   = before!   | meets!
+
+From the book:
+
+> As we will see later, four of these Allen relationship categories are especially important. They will be discussed in later chapters, but we choose to mention them here.
+> 1. The [intersects] relationship is important because for a temporal insert transaction to be valid, its effective time period cannot intersect that of any episode for the same object which is already in the target table. By the same token, for a temporal update or delete transaction to be valid, the target table must already contain at least one episode for the same object whose effective time period does [intersect] the time period designated by the transaction.
+> 2. The [fills] relationship is important because violations of the temporal analog of referential integrity always involve the failure of a child time period to [fill] a parent time period. We will be frequently discussing this relationship from the parent side, and we would like to avoid having to say things like ".... failure of a parent time period to be filled by a child time period". So we will use the term "includes" as a synonym for "is filled by", i.e. as a synonym for [fills−1]. Now we can say "..... failure of a parent time period to include a child time period".
+> 3. The [before] relationship is important because it distinguishes episodes from one another. Every episode of an object is non-contiguous with every other episode of the same object, and so for each pair of them, one of them must be [before] the other.
+> 4. The [meets] relationship is important because it groups versions for the same object into episodes. A series of versions for the same object that are all contiguous, i.e. that all [meet], fall within the same episode of that object.
+
 
 With ordinary numbers, the operators <=, >= and != exist; you might be wondering
 why they were not considered. These extra operators are derived from the core operators:
@@ -201,7 +220,7 @@ For a hypothetical Ruby-esque approach, I'll be aiming for something like:
 Read up on the algebra to understand how sets of operators can be used in expressions.
 
 
-## Still to do
+## Still to do, or discuss properly
 
 * Account for chronons and clock-ticks.
 * Given the existence of clock ticks, temporal database theory considers `[x, x + ct)`
