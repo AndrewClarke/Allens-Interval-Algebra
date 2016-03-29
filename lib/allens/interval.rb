@@ -23,8 +23,8 @@ module Allens
       #
       ends ||= self.class.forever
       ends.nil?                 and raise Allens::Inteval::Winge
-      starts > ends             and raise ArgumentError, "Expected starts <= ends. Got starts=#{starts}, ends=#{ends}"
-      ends > self.class.forever and raise ArgumentError, "Expected ends <= 'FOREVER' (#{self.class.forever}). Got starts=#{starts}, ends=#{ends}"
+      starts < ends              or raise ArgumentError, "Expected starts < ends. Got starts=#{starts}, ends=#{ends}"
+      ends <= self.class.forever or raise ArgumentError, "Expected ends <= 'FOREVER' (#{self.class.forever}). Got starts=#{starts}, ends=#{ends}"
 
       @starts, @ends = starts, ends
     end
