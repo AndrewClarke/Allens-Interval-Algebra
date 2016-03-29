@@ -95,15 +95,23 @@ module Allens
 
     ##################################################################
     # Combinatoral operators - See chapter 3's taxonomy.
-    # TODO: Unit tests!
     # TODO: expand the nested calls, and simplify the expressions,
     # but ONLY after the unit tests are solid!!!
     #
-    def aligns?(y);     return starts?(y) || finishes?(y) || finishedBy?(y) || startedBy?(y); end
-    def occupies?(y);   return during?(y) || includes?(y) || aligns?(y);                      end
-    def fills?(y);      return equals?(y) || occupies?(y);                                    end
-    def intersects?(y); return overlaps?(y) || overlappedBy?(y) || fills?(y);                 end
-    def excludes?(y);   return before?(y) || meets?(y) || metBy?(y) || after?(y);             end
+    def before!(y);     return before?(y)   || after?(y);        end
+    def meets!(y);      return meets?(y)    || metBy?(y);        end
+    def overlaps!(y);   return overlaps?(y) || overlappedBy?(y); end
+    def starts!(y);     return starts?(y)   || startedBy?(y);    end
+    def during!(y);     return during?(y)   || includes?(y);     end
+    def finishes!(y);   return finishes?(y) || finishedBy?(y);   end
+    def equals!(y);     return equals?(y);                       end
+
+    def aligns!(y);     return starts!(y)   || finishes!(y);     end
+    def occupies!(y);   return aligns!(y)   || during!(y);       end
+    def fills!(y);      return occupies!(y) || equals!(y);       end
+    def intersects!(y); return fills!(y)    || overlaps!(y);     end
+    def excludes!(y);   return before!(y)   || meets!(y);        end
+
 
 
     ##################################################################

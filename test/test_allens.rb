@@ -10,7 +10,6 @@ class TestInterval < Allens::Interval
 end
 
 
-
 class AllensTest < Test::Unit::TestCase
   FUNDAMENTAL_TESTS = [
             :before?,       :meets?,    :overlaps?,
@@ -20,7 +19,11 @@ class AllensTest < Test::Unit::TestCase
             :overlappedBy?, :metBy?,    :after?
           ]
 
-  HIGHER_TESTS = [ :aligns?, :occupies?, :fills?, :intersects?, :excludes? ]
+  HIGHER_TESTS = [
+    :before!, :meets!, :overlaps!, :starts!, :during!, :finishes!,
+    :equals!, :aligns!, :occupies!, :fills!, :intersects!, :excludes!
+  ]
+
 
   # The patterns are described in test_helper.rb
   # Each pattern pair will satisfy exactly one operator. The pairs of pairs are
