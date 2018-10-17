@@ -17,6 +17,9 @@ module Allens
     def self.forever;   raise Allens::Interval::Whinge; end
 
 
+    attr_reader :starts, :ends
+
+
     def initialize(starts, ends = nil)
       # Passing in a nil 'ends' (ie not passing) manufactures a forever Interval.
       # Programmers may pass the forever value of their particular subclass; cope with that too
@@ -31,19 +34,19 @@ module Allens
 
 
     def hash
-      return starts.hash ^ ends.hash
+      return @starts.hash ^ @ends.hash
     end
 
 
     def eql?(other)
-      return starts == other.starts && ends == other.ends
+      return @starts == other.starts && @ends == other.ends
     end
 
 
     ##################################################################
     # Utility functions
     def to_s(*args)
-      return "[" + starts.to_s(*args) + "," + (forever? ? "-" : ends.to_s(*args)) + ")"
+      return "[" + @starts.to_s(*args) + "," + (forever? ? "-" : @ends.to_s(*args)) + ")"
     end
 
 
@@ -53,20 +56,11 @@ module Allens
 
 
     def forever?
-      return ends == self.class.forever
+      return @ends == self.class.forever
     end
 
     def limited?
-      return ends != self.class.forever
-    end
-
-
-    def starts
-      return @starts
-    end
-
-    def ends
-      return @ends
+      return @ends != self.class.forever
     end
 
 
@@ -78,19 +72,19 @@ module Allens
     # Consider the granularity effect of the clocktick, and hope that it won't
     # need subtracting from one of the values with changes from (eg) < to <= or whatever...
 
-    def before?(y);       return ends   <  y.starts;                                      end
-    def meets?(y);        return ends   == y.starts;                                      end
-    def overlaps?(y);     return starts <  y.starts && ends >  y.starts && ends < y.ends; end
-    def starts?(y);       return starts == y.starts && ends <  y.ends;                    end
-    def during?(y);       return starts >  y.starts && ends <  y.ends;                    end
-    def finishes?(y);     return starts >  y.starts && ends == y.ends;                    end
-    def equals?(y);       return starts == y.starts && ends == y.ends;                    end
-    def finishedBy?(y);   return starts <  y.starts && ends == y.ends;                    end
-    def includes?(y);     return starts <  y.starts && ends >  y.ends;                    end
-    def startedBy?(y);    return starts == y.starts && ends >  y.ends;                    end
-    def overlappedBy?(y); return starts >  y.starts && starts < y.ends && ends > y.ends;  end
-    def metBy?(y);        return starts == y.ends;                                        end
-    def after?(y);        return starts >  y.ends;                                        end
+    def before?(y);       return @ends   <  y.starts;                                        end
+    def meets?(y);        return @ends   == y.starts;                                        end
+    def overlaps?(y);     return @starts <  y.starts && @ends >  y.starts && @ends < y.ends; end
+    def starts?(y);       return @starts == y.starts && @ends <  y.ends;                     end
+    def during?(y);       return @starts >  y.starts && @ends <  y.ends;                     end
+    def finishes?(y);     return @starts >  y.starts && @ends == y.ends;                     end
+    def equals?(y);       return @starts == y.starts && @ends == y.ends;                     end
+    def finishedBy?(y);   return @starts <  y.starts && @ends == y.ends;                     end
+    def includes?(y);     return @starts <  y.starts && @ends >  y.ends;                     end
+    def startedBy?(y);    return @starts == y.starts && @ends >  y.ends;                     end
+    def overlappedBy?(y); return @starts >  y.starts && @starts < y.ends && @ends > y.ends;  end
+    def metBy?(y);        return @starts == y.ends;                                          end
+    def after?(y);        return @starts >  y.ends;                                          end
 
 
     ##################################################################
