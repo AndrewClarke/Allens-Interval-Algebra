@@ -15,15 +15,15 @@ If you are interested in temporal databases, A very useful book to read is
 
 Throughout the code and documentation, "the book" refers to this book.
 
-Defines a type representing a closed-open range from `[starts, ends)`, where ends
-represents the first value NOT part of the range. The methods define the strict
+This gem defines a type representing a closed-open range from `[starts, ends)`, where
+ends represents the first value NOT part of the range. The methods define the strict
 definitions of the operators from Allens Interval Algebra, where a pair of intervals
 can only satisfy exactly one operator.
 
 The class must be sub-classed because you are required to define a 'forever' value
 for your class, along with the size of the atomic clock and clock ticks in your
 chosen resolution.
-NOTE: currently, the two clock ticks are not used because I'm not sure if the clients
+NOTE: Currently, the two clock ticks are not used because I'm not sure if the clients
 should be required to round to the tick granularities, or whether this library should
 act like a nanny and perform/check roundings on your behalf. It is important to know,
 however, that the code is always written to trust that the start and end values are
@@ -35,21 +35,21 @@ the comparison operators within the methods. Using a genuine value from the ordi
 scale allows much simpler optimised expressions when inlined, not to mention simpler
 expressions in the fundamental operators themselves.
 
-Note that the clock tick must be some multiple of the 'atomic clock' which is the
-smallest resolution possible for your chosen scalars, such as 1 microsecond if using
-a native timestamp in your chosen language. I'm considering using 1 millisecond for
-any work I do in Rails, since it would suit the sort of business applications I'm
-likely to be involved in. Future code might support storing the clock tick value
-in the database, and it would be seriously advanced to allow different columns to
-support different clock ticks. The book says that is possible, albeit complex, but
-I haven't got around to that chapter or section yet...
+That the clock tick must be some multiple of the 'atomic clock' which is the smallest
+resolution possible for your chosen scalars, such as 1 microsecond if using a native
+timestamp in your chosen language. I'm considering using 1 millisecond for any work
+I do in Rails, since it would suit the sort of business applications I'm likely to be
+involved in. Future code might support storing the clock tick value in the database,
+and it would be seriously advanced to allow different columns to support different
+clock ticks. The book says that is possible, albeit complex, but I haven't got around
+to that chapter or section yet...
 
 Pro Tip: choose a 'forever' value that is basically the maximum possible in your
 chosen scalar, for example, timestamp '9999/12/31 23:59:59.999999' (or perhaps relax
 a bit and use '9999/12/31 00:00:00' so you don't have to fuss around finding a value
-that is one clock-tick shy of ultimate hugeness... The book chooses a clock tick of
-1 month (!) simply because it's easier to fit the data when presenting tables in
-printed form.
+that is one clock-tick shy of ultimate hugeness... Similarly, the book chooses a clock
+tick of 1 month (!) simply because it's easier to fit the data when presenting tables
+in printed form.
 
 You can base your end-points on any ordinal scalar: fixnum, floats, timestamps, etc.
 It is important to note that the code is definitely assuming a clock-tick, as opposed
@@ -72,7 +72,7 @@ because, remember, e is not 'in' the span, for example, using c=1,
     [10, 11) encompasses only timestamp 10, which of course must have length 0
              length = 11 - 10 - 1 == 0
 
-Note also that when using clock ticks, [x, x) is an illegal interval.
+When using clock ticks, [x, x) is an illegal interval.
 
 Choosing a certain sized clock tick means that you will never try to represent a
 fraction of a clock-tick in your intervals. If you want to measure down to milliseconds,
@@ -92,16 +92,15 @@ The book states:
 ## Overview of Allens Interval Algebra
 
 To understand AIA, consider the comparison relations of ordinary numbers for a moment.
-Just as, for any specific values in x and y, only one of the following relations
-will be true:
+For any specific values in x and y, only one of the following relations will be true:
 
     x < y
     x == y
     x > y
 
-In Allens Interval Algebra, only one of the following relations will be true,
-as the sample pairs show. Notice the symmetry of the operators on either side
-of the equals? operator.
+In Allens Interval Algebra, only one of the following relations will be true, as the
+sample pairs show. Notice the symmetry of the operators on either side of the equals?
+operator.
 
     x.before?(y)            [1,3)   [4,10)      B   <   B
     x.meets?(y)             [1,4)   [4,10)      M   m   M
@@ -119,7 +118,7 @@ of the equals? operator.
 
 (ignore the last columns of letters and symbols, they will be referred to later)
 
-NOTE: A number of higher-level operators exist, offering useful combinations:
+A number of higher-level operators exist, offering useful combinations:
 
     before!     = before?   | after?
     meets!      = meets?    | metBy?
@@ -135,11 +134,14 @@ NOTE: A number of higher-level operators exist, offering useful combinations:
     intersects! = fills!    | overlaps!
     excludes!   = before!   | meets!
 
-From the book:
+An important point about the several of these is that they don't care about the
+ordering of the args. For example, x.before?(y) is asking only if x is before y.
+However, x.before!(y) is asking whether either is before the other (ie no overlap).
+This is particularly important for constraints in temporal databases. From the book:
 
-> As we will see later, four of these Allen relationship categories are especially important. They will be discussed in later chapters, but we choose to mention them here.
+> As we will see later, four of these Allen relationship categories are especially important.
 > 1. The [intersects] relationship is important because for a temporal insert transaction to be valid, its effective time period cannot intersect that of any episode for the same object which is already in the target table. By the same token, for a temporal update or delete transaction to be valid, the target table must already contain at least one episode for the same object whose effective time period does [intersect] the time period designated by the transaction.
-> 2. The [fills] relationship is important because violations of the temporal analog of referential integrity always involve the failure of a child time period to [fill] a parent time period. We will be frequently discussing this relationship from the parent side, and we would like to avoid having to say things like ".... failure of a parent time period to be filled by a child time period". So we will use the term "includes" as a synonym for "is filled by", i.e. as a synonym for [fills−1]. Now we can say "..... failure of a parent time period to include a child time period".
+> 2. The [fills] relationship is important because violations of the temporal analog of referential integrity always involve the failure of a child time period to [fill] a parent time period. We will be frequently discussing this relationship from the parent side, and we would like to avoid having to say things like ".... failure of a parent time period to be filled by a child time period".
 > 3. The [before] relationship is important because it distinguishes episodes from one another. Every episode of an object is non-contiguous with every other episode of the same object, and so for each pair of them, one of them must be [before] the other.
 > 4. The [meets] relationship is important because it groups versions for the same object into episodes. A series of versions for the same object that are all contiguous, i.e. that all [meet], fall within the same episode of that object.
 
@@ -181,7 +183,7 @@ then
 
 The next column shows a symbolism which uses ^ for inverse, and symbols < = > where possible.
 This appears to be the original Allens symbolism or near enough, but is clearly not suitable
-for Ruby meta-programming.
+for Ruby method names.
 
 In order to support meta-programming in Ruby, this module will use the notation of the last
 column, which is slightly more mnemonic while remaining very concise.
@@ -204,7 +206,7 @@ Personally, I would have thought
 
 would be a better representation, so either:
 
-    1/ I don't understand all the intricacies (quite likely!)
+    1/ I don't understand all the intricacies
     2/ It is a poor example (even Wikipedia etc etc)
     3/ It is just a simple example showing the sort of questions we may ask of a database:
 
