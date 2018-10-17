@@ -23,7 +23,33 @@ module Allens
       end
 
       return result
-    end
+    end  # self.maker
   end
+
+
+  def self.rangeO(str)
+    # Construct an open-ended Range from a string like   /^\.*x+\.*$/
+    # The pattern returns a Range starting at 1..n (where the first [Xx] is found) and the end is the
+    # position after the last x found.
+
+    starts = str.index(/x/) + 1
+    ends = (str.index(?., starts - 1) || str.length) + 1
+    result = starts.to_f ... ends.to_f
+
+    return result
+  end  # self.rangeO
+
+
+  def self.rangeC(str)
+    # Construct a closed-end Range from a string like   /^\.*x+\.*$/
+    # The pattern returns a Range starting at 1..n (where the first [Xx] is found) and the end is the
+    # position after the last x found.
+
+    starts = str.index(/x/) + 1
+    ends = (str.index(?., starts - 1) || str.length) + 1
+    result = starts.to_f .. ends.to_f
+
+    return result
+  end  # self.rangeC
 end
 
