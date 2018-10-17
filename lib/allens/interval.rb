@@ -132,10 +132,8 @@ module Allens
         return send(key, *args)
       end
 
-      # TODO: a real error message shows line numbers...
-      raise NoMethodError, "undefined or improperly named method `#{text}(*#{args.count})'"
-    end
-    # method_missing
+      super
+    end  # method_missing
   end
 end
 
