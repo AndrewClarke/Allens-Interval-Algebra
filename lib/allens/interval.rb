@@ -22,7 +22,7 @@ module Allens
       # Programmers may pass the forever value of their particular subclass; cope with that too
       #
       ends ||= self.class.forever
-      ends.nil?                 and raise Allens::Inteval::Winge
+      ends.nil?                 and raise Allens::Inteval::Whinge
       starts < ends              or raise ArgumentError, "Expected starts < ends. Got starts=#{starts}, ends=#{ends}"
       ends <= self.class.forever or raise ArgumentError, "Expected ends <= 'FOREVER' (#{self.class.forever}). Got starts=#{starts}, ends=#{ends}"
 
